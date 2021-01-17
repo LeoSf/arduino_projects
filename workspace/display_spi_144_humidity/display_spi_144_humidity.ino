@@ -1,5 +1,5 @@
 /**
- * @file display_spi_144_basic_text.ino
+ * @file display_spi_144_humidity.ino
  *
  * @brief Basic source code
  *
@@ -7,10 +7,13 @@
  * (Note: this needs exactly one @defgroup somewhere)
  *
  * @author Leo Medus
- * Contact: leomedus@gmail.com
+ *
+ * Notes:
+ *      Dry: (520 430]
+ *      Wet: (430 350]
+ *      Water: (350 260]
  *
  */
-
 
 #include <SPI.h>
 #include <Adafruit_GFX.h>
@@ -36,46 +39,63 @@ You are using 4 wire SPI here, so:
  */
 #define __CS 10
 #define __DC 9
-/*
-Teensy 3.x can use: 2,6,9,10,15,20,21,22,23
-Arduino's 8 bit: any
-DUE: check arduino site
-If you do not use reset, tie it to +3V3
-*/
-
 
 TFT_ILI9163C display = TFT_ILI9163C(__CS, __DC);
 
-float p = 3.1415926;
-
 float humidity_val = 12.57;
 
+
+const int analogInPin = A0;  // Analog input pin that the potentiometer is attached to
+
+int sensorValue = 0;        // value read from the pot
+int outputValue = 0;        // value output to the PWM (analog out)
+
+
 void setup(void) {
-  display.begin();
 
+    // initialization of the  serial communications at 9600 bps:
+    Serial.begin(9600);
 
-  uint16_t time = millis();
-  time = millis() - time;
+    // display initialization
+    display.begin();
 
-//  lcdTestPattern();
-//  delay(1000);
+    display.clearScreen();
+    delay(1000);
 
-  display.clearScreen();
-  display.setCursor(0,0);
-  delay(1000);
+    display_basic_info();
 
-  // tftPrintTest();
-
-  display_basic_info();
-
-  delay(2000);
-
+    delay(2000);
 
 }
 
 void loop()
 {
-    /* empty void loop */
+    /* reading humidity sensor */
+    read_humidity();
+    display_sensor_value();
+    delay(1000);
+
+}
+
+void read_humidity()
+{
+    // read the analog in value:
+    sensorValue = analogRead(analogInPin);
+    // map it to the range of the analog out:
+    outputValue = map(sensorValue, 0, 1023, 0, 100);
+
+    // change the analog out value:
+    // analogWrite(analogOutPin, outputValue);
+
+    // print the results to the Serial Monitor:
+    Serial.print("sensor = ");
+    Serial.print(sensorValue);
+    Serial.print("\t output = ");
+    Serial.println(outputValue);
+
+    // wait 2 milliseconds before the next loop for the analog-to-digital
+    // converter to settle after the last reading:
+    // delay(2);
 }
 
 void display_basic_info()
@@ -96,31 +116,19 @@ void display_basic_info()
     display.print(" : baby :");
     display.print("\n\n");
 
-
     // display.setCursor(0, 60);
-    display.setTextColor(BLUE);
-    display.setTextSize(3);
-    display.print(humidity_val);
+    // display.setTextColor(BLUE);
+    // display.setTextSize(3);
+    // display.print(sensorValue);
 
 }
-
-void test_text()
+void display_sensor_value()
 {
-    display.clearScreen();
-    display.setCursor(0, 2);
+    display.fillRect(48, 98, 55, 25, GREEN);
 
-    /* text in red */
-    display.setTextColor(RED);
-    display.setTextSize(1);
-    display.println("Hello World!");
-
-    /* text in yellow, background in green */
-    display.setTextColor(YELLOW, GREEN);
-    display.setTextSize(2);
-    display.print("Hello Wo\n");
-
-
+    display.setCursor(50, 100);
     display.setTextColor(BLUE);
     display.setTextSize(3);
-    display.print(12.57);
+    display.print(sensorValue);
+
 }
