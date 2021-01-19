@@ -4,8 +4,18 @@ Leandro D. Medus [2021]
 
 ## Repository description
 
-TBD
+This repository contains multiple Arduino based projects. It also include datasheets of each sensor being used and some extra documentation.
 
+## Workspace Description
+
+### Plant moisture control
+
+The goal of this project is to control the moisture of the ground of a plant.
+
+The system setup is composed of:
+ *  Arduino pro mini ATmega328P (5V \@16MHz)
+ *  Display 1.44" 128x 128 TFT LCD with SPI Interface
+ *  Soil moisture sensor hygrometer module V1.2 capacitive for Arduino
 
 
 ## License
