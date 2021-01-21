@@ -10,10 +10,10 @@
  *
  * Details:
  *  [setup] - ESP-32 Dev Kit C V2
-            - led and 1k resisitor connected to pin 2.
+ *          - led and 330 Ohm resisitor connected to pin 2.
  *
  *      This code uses pwm to control brightness over a led connected on pin 2.
- *               -------
+ *                     ---            ----------
  *
  * Date: 20/01/2020 (dd/mm/yyyy)
  */
