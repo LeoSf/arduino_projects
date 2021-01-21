@@ -1,7 +1,7 @@
 /**
- * @file esp32_template.ino
+ * @file esp32_web_server_basic.ino
  *
- * @brief Brief description of the file
+ * @brief web server to control two digital outputs
  *
  * @ingroup noPackageYet
  * (Note: this needs exactly one @defgroup somewhere)
@@ -14,7 +14,7 @@
  *
  * Date: 21/01/2020 (dd/mm/yyyy)
  *
- *      This program receives a byte from the serial port and displays it again (echo).
+ *      This program control two digital outputs from a webserver.
  *
  */
 
