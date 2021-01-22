@@ -1,1 +1,2 @@
 workspace/libraries/*
+/workspace/*/network_credentials.h
