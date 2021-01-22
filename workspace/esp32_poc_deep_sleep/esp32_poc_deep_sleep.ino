@@ -41,8 +41,7 @@
 RTC_DATA_ATTR int bootCount = 0;
 
 /*
-Method to print the reason by which ESP32
-has been awaken from sleep
+    Method to print the reason by which ESP32 has been awaken from sleep
 */
 void print_wakeup_reason(){
     esp_sleep_wakeup_cause_t wakeup_reason;
