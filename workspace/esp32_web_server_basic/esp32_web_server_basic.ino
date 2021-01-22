@@ -22,7 +22,7 @@
 #include <WiFi.h>
 
 /*  network data and credentials */
-#include "data.h"
+#include "network_credentials.h"
 
 extern const char* ssid;
 extern const char* password;
