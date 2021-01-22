@@ -1,7 +1,7 @@
 /**
- * @file esp32_template.ino
+ * @file esp32_mpu6050.ino
  *
- * @brief Brief description of the file
+ * @brief TBD
  *
  * @ingroup noPackageYet
  * (Note: this needs exactly one @defgroup somewhere)
@@ -10,11 +10,11 @@
  *
  * Details:
  *  [setup] - ESP-32 Dev Kit C V2
- *          - The circuit: No external hardware needed
+ *          - MPU6050
  *
- * Date: 21/01/2020 (dd/mm/yyyy)
+ * Date: 22/01/2020 (dd/mm/yyyy)
  *
- *      This program receives a byte from the serial port and displays it again (echo).
+ *      basic and general description TBD
  *
  */
 

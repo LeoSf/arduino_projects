@@ -12,7 +12,7 @@
  *  [setup] - ESP-32 Dev Kit C V2
  *          - The circuit: No external hardware needed
  *
- * Date: 21/01/2020 (dd/mm/yyyy)
+ * Date: 22/01/2020 (dd/mm/yyyy)
  *
  *
  *      Simple Deep Sleep with Timer Wake Up

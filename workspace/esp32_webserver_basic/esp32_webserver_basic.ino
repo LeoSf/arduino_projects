@@ -14,7 +14,7 @@
  *
  * Date: 21/01/2020 (dd/mm/yyyy)
  *
- *      This program control two digital outputs from a webserver.
+ *      basic and general description TBD
  *
  */
 
