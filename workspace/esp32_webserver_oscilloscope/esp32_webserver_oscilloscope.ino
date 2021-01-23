@@ -18,6 +18,11 @@
 
 #include <WiFi.h>
 
+/* including network credentials */
+#include "network_credentials.h"
+extern const char* staSSID;
+extern const char* staPassword;
+
 // simplify the use of FTP server in this project by avoiding user management - anyone is alowed to use it
 #define USER_MANAGEMENT NO_USER_MANAGEMENT
 #include "user_management.h"
@@ -37,219 +42,219 @@ httpServer *webSrv;
 void runOscilloscope (WebSocket *webSocket);
 
 String httpRequestHandler (String& httpRequest) {
-  // handle HTTP protocol requests, return HTML or JSON text
-  // note that webServer handles HTTP requests to .html files by itself (in our case oscilloscope.html if uploaded into /var/www/html/ with FTP previously)
-  // so you don't have to handle this kind of requests yourself
+    // handle HTTP protocol requests, return HTML or JSON text
+    // note that webServer handles HTTP requests to .html files by itself (in our case oscilloscope.html if uploaded into /var/www/html/ with FTP previously)
+    // so you don't have to handle this kind of requests yourself
 
-  // example:
-  // if (httpRequest.substring (0, 12) == "GET /upTime ") {  // return up-time in JSON format
-  //                                                        unsigned long l = micros ();
-  //                                                        return "{\"id\":\"esp32\",\"upTime\":\"" + String (l) + " sec\"}\r\n";
-  //                                                      }
-  // else
+    // example:
+    // if (httpRequest.substring (0, 12) == "GET /upTime ") {  // return up-time in JSON format
+    //                                                        unsigned long l = micros ();
+    //                                                        return "{\"id\":\"esp32\",\"upTime\":\"" + String (l) + " sec\"}\r\n";
+    //                                                      }
+    // else
 
-  return ""; // HTTP request has not been handled by httpRequestHandler - let the webServer handle it itself
+    return ""; // HTTP request has not been handled by httpRequestHandler - let the webServer handle it itself
 }
 void wsRequestHandler (String& wsRequest, WebSocket *webSocket) {
-  // handle HTTP protocol requests, return HTML or JSON text
-  // note that webServer handles HTTP requests to .html files by itself (in our case oscilloscope.html if uploaded into /var/www/html/ with FTP previously)
-  // so you don't have to handle this kind of requests yourself
+    // handle HTTP protocol requests, return HTML or JSON text
+    // note that webServer handles HTTP requests to .html files by itself (in our case oscilloscope.html if uploaded into /var/www/html/ with FTP previously)
+    // so you don't have to handle this kind of requests yourself
 
-  Serial.printf ("[%10lu] [oscilloscope] got WS request\n%s", millis (), wsRequest.c_str ());
+    Serial.printf ("[%10lu] [oscilloscope] got WS request\n%s", millis (), wsRequest.c_str ());
 
-  // handle WS (WebSockets) protocol requests
-  if (wsRequest.substring (0, 21) == "GET /runOscilloscope " ) { // called from oscilloscope.html
-                                                                 runOscilloscope (webSocket);
-                                                               }
+    // handle WS (WebSockets) protocol requests
+    if (wsRequest.substring (0, 21) == "GET /runOscilloscope " ) { // called from oscilloscope.html
+        runOscilloscope (webSocket);
+    }
 }
 
 // Oscilloscope ---------------------------------------------------------------------------------------------------
 
 struct oscilloscopeSample {
-   int16_t value;       // sample value read by analogRead or digialRead
-   int16_t timeOffset;  // sampe time offset drom previous sample in ms or us
+    int16_t value;       // sample value read by analogRead or digialRead
+    int16_t timeOffset;  // sampe time offset drom previous sample in ms or us
 };
 
 struct oscilloscopeSamples {
-   oscilloscopeSample samples [64]; // sample buffer will never exceed 41 samples, make it 64 for simplicity reasons
-   int count;                       // number of samples in the buffer
-   bool ready;                      // is the buffer ready for sending
+    oscilloscopeSample samples [64]; // sample buffer will never exceed 41 samples, make it 64 for simplicity reasons
+    int count;                       // number of samples in the buffer
+    bool ready;                      // is the buffer ready for sending
 };
 
 struct oscilloscopeSharedMemoryType { // data structure to be shared with oscilloscope tasks
-  // basic objects for webSocket communication
-  WebSocket *webSocket;               // open webSocket for communication with javascript client
-  bool clientIsBigEndian;             // true if javascript client is big endian machine
-  // sampling parameterss
-  char readType [8];                  // analog or digital
-  bool analog;                        // true if readType is analog, false if digital
-  int gpio;                           // gpio in which ESP32 is taking samples from
-  int samplingTime;                   // time between samples in ms or us
-  char samplingTimeUnit [3];          // ms or us
-  bool microSeconds;                  // true if samplingTimeunit is us, false if ms
-  byte microSecondCorrection;         // delay correction for micro second tiing
-  int screenWidthTime;                // oscilloscope screen width in ms or us
-  char screenWidthTimeUnit [3];       // ms or us
-  int screenRefreshTime;              // time before screen is refreshed with new samples in ms or us
-  long screenRefreshTimeCommonUnit;   // screen refresh time translated into same time unit as screen width time
-  char screenRefreshTimeUnit [3];     // ms or us
-  int screenRefreshModulus;           // used to reduce refresh frequency down to sustainable 20 Hz
-  bool positiveTrigger;               // true if posotive slope trigger is set
-  int positiveTriggerTreshold;        // positive slope trigger treshold value
-  bool negativeTrigger;               // true if negative slope trigger is set
-  int negativeTriggerTreshold;        // negative slope trigger treshold value
-  // buffers holding samples
-  oscilloscopeSamples readBuffer;     // we'll read samples into this buffer
-  oscilloscopeSamples sendBuffer;     // we'll copy red buffer into this buffer before sending samples to the client
-  portMUX_TYPE csSendBuffer;          // MUX for handling critical section while copying
-  // status of oscilloscope threads
-  bool readerIsRunning;
-  bool senderIsRunning;
+    // basic objects for webSocket communication
+    WebSocket *webSocket;               // open webSocket for communication with javascript client
+    bool clientIsBigEndian;             // true if javascript client is big endian machine
+    // sampling parameterss
+    char readType [8];                  // analog or digital
+    bool analog;                        // true if readType is analog, false if digital
+    int gpio;                           // gpio in which ESP32 is taking samples from
+    int samplingTime;                   // time between samples in ms or us
+    char samplingTimeUnit [3];          // ms or us
+    bool microSeconds;                  // true if samplingTimeunit is us, false if ms
+    byte microSecondCorrection;         // delay correction for micro second tiing
+    int screenWidthTime;                // oscilloscope screen width in ms or us
+    char screenWidthTimeUnit [3];       // ms or us
+    int screenRefreshTime;              // time before screen is refreshed with new samples in ms or us
+    long screenRefreshTimeCommonUnit;   // screen refresh time translated into same time unit as screen width time
+    char screenRefreshTimeUnit [3];     // ms or us
+    int screenRefreshModulus;           // used to reduce refresh frequency down to sustainable 20 Hz
+    bool positiveTrigger;               // true if posotive slope trigger is set
+    int positiveTriggerTreshold;        // positive slope trigger treshold value
+    bool negativeTrigger;               // true if negative slope trigger is set
+    int negativeTriggerTreshold;        // negative slope trigger treshold value
+    // buffers holding samples
+    oscilloscopeSamples readBuffer;     // we'll read samples into this buffer
+    oscilloscopeSamples sendBuffer;     // we'll copy red buffer into this buffer before sending samples to the client
+    portMUX_TYPE csSendBuffer;          // MUX for handling critical section while copying
+    // status of oscilloscope threads
+    bool readerIsRunning;
+    bool senderIsRunning;
 };
 
 void oscilloscopeReader (void *parameters) {
-  unsigned char gpio =                ((oscilloscopeSharedMemoryType *) parameters)->gpio;
-  bool analog =                       !strcmp (((oscilloscopeSharedMemoryType *) parameters)->readType, "analog");
-  int16_t samplingTime =              ((oscilloscopeSharedMemoryType *) parameters)->samplingTime;
-  bool microSeconds =                 ((oscilloscopeSharedMemoryType *) parameters)->microSeconds;
-  int screenWidthTime =               ((oscilloscopeSharedMemoryType *) parameters)->screenWidthTime;
-  // int screenRefreshTime =             ((oscilloscopeSharedMemoryType *) parameters)->screenRefreshTime;
-  long screenRefreshTimeCommonUnit =  ((oscilloscopeSharedMemoryType *) parameters)->screenRefreshTimeCommonUnit;
-  int screenRefreshModulus =          ((oscilloscopeSharedMemoryType *) parameters)->screenRefreshModulus;
-  oscilloscopeSamples *readBuffer =   &((oscilloscopeSharedMemoryType *) parameters)->readBuffer;
-  oscilloscopeSamples *sendBuffer =   &((oscilloscopeSharedMemoryType *) parameters)->sendBuffer;
-  bool positiveTrigger =              ((oscilloscopeSharedMemoryType *) parameters)->positiveTrigger;
-  int16_t positiveTriggerTreshold =   ((oscilloscopeSharedMemoryType *) parameters)->positiveTriggerTreshold;
-  bool negativeTrigger =              ((oscilloscopeSharedMemoryType *) parameters)->negativeTrigger;
-  int16_t negativeTriggerTreshold =   ((oscilloscopeSharedMemoryType *) parameters)->negativeTriggerTreshold;
-  portMUX_TYPE *csSendBuffer =        &((oscilloscopeSharedMemoryType *) parameters)->csSendBuffer;
+    unsigned char gpio =                ((oscilloscopeSharedMemoryType *) parameters)->gpio;
+    bool analog =                       !strcmp (((oscilloscopeSharedMemoryType *) parameters)->readType, "analog");
+    int16_t samplingTime =              ((oscilloscopeSharedMemoryType *) parameters)->samplingTime;
+    bool microSeconds =                 ((oscilloscopeSharedMemoryType *) parameters)->microSeconds;
+    int screenWidthTime =               ((oscilloscopeSharedMemoryType *) parameters)->screenWidthTime;
+    // int screenRefreshTime =             ((oscilloscopeSharedMemoryType *) parameters)->screenRefreshTime;
+    long screenRefreshTimeCommonUnit =  ((oscilloscopeSharedMemoryType *) parameters)->screenRefreshTimeCommonUnit;
+    int screenRefreshModulus =          ((oscilloscopeSharedMemoryType *) parameters)->screenRefreshModulus;
+    oscilloscopeSamples *readBuffer =   &((oscilloscopeSharedMemoryType *) parameters)->readBuffer;
+    oscilloscopeSamples *sendBuffer =   &((oscilloscopeSharedMemoryType *) parameters)->sendBuffer;
+    bool positiveTrigger =              ((oscilloscopeSharedMemoryType *) parameters)->positiveTrigger;
+    int16_t positiveTriggerTreshold =   ((oscilloscopeSharedMemoryType *) parameters)->positiveTriggerTreshold;
+    bool negativeTrigger =              ((oscilloscopeSharedMemoryType *) parameters)->negativeTrigger;
+    int16_t negativeTriggerTreshold =   ((oscilloscopeSharedMemoryType *) parameters)->negativeTriggerTreshold;
+    portMUX_TYPE *csSendBuffer =        &((oscilloscopeSharedMemoryType *) parameters)->csSendBuffer;
 
-  int screenTimeOffset = 0;
-  int16_t sampleTimeOffset = 0;
-  int screenRefreshCounter = 0;
-  while (true) {
+    int screenTimeOffset = 0;
+    int16_t sampleTimeOffset = 0;
+    int screenRefreshCounter = 0;
+    while (true) {
 
-    // insert first dummy sample that tells javascript client to start drawing from the left
-    readBuffer->samples [0] = {-1, -1};
-    readBuffer->count = 1;
+        // insert first dummy sample that tells javascript client to start drawing from the left
+        readBuffer->samples [0] = {-1, -1};
+        readBuffer->count = 1;
 
-    unsigned int lastSampleTime = microSeconds ? micros () : millis ();
-    screenTimeOffset = 0;
-    bool triggeredMode = positiveTrigger || negativeTrigger;
+        unsigned int lastSampleTime = microSeconds ? micros () : millis ();
+        screenTimeOffset = 0;
+        bool triggeredMode = positiveTrigger || negativeTrigger;
 
-    if (triggeredMode) { // if no trigger is set then skip this part and start sampling immediatelly
-      // Serial.printf ("[oscilloscope] waiting to be triggered ...\n");
-      int16_t lastSample = analog ? analogRead (gpio) : digitalRead (gpio);
-      lastSampleTime = microSeconds ? micros () : millis ();
+        if (triggeredMode) { // if no trigger is set then skip this part and start sampling immediatelly
+            // Serial.printf ("[oscilloscope] waiting to be triggered ...\n");
+            int16_t lastSample = analog ? analogRead (gpio) : digitalRead (gpio);
+            lastSampleTime = microSeconds ? micros () : millis ();
 
-      while (true) {
-        if (microSeconds) SPIFFSsafeDelayMicroseconds (samplingTime);
-        else              SPIFFSsafeDelay (samplingTime);
-        int16_t newSample = analog ? analogRead (gpio) : digitalRead (gpio);
-        unsigned int newSampleTime = microSeconds ? micros () : millis ();
-        if ((positiveTrigger && lastSample < positiveTriggerTreshold && newSample >= positiveTriggerTreshold) ||
-            (negativeTrigger && lastSample > negativeTriggerTreshold && newSample <= negativeTriggerTreshold)) {
-          // insert both samples into the buffer
-          readBuffer->samples [1] = {lastSample, 0};
-          readBuffer->samples [2] = {newSample, (int16_t) (screenTimeOffset = newSampleTime - lastSampleTime)};
-          readBuffer->count = 3;
-          break;
+            while (true) {
+                if (microSeconds) SPIFFSsafeDelayMicroseconds (samplingTime);
+                else              SPIFFSsafeDelay (samplingTime);
+                int16_t newSample = analog ? analogRead (gpio) : digitalRead (gpio);
+                unsigned int newSampleTime = microSeconds ? micros () : millis ();
+                if ((positiveTrigger && lastSample < positiveTriggerTreshold && newSample >= positiveTriggerTreshold) ||
+                (negativeTrigger && lastSample > negativeTriggerTreshold && newSample <= negativeTriggerTreshold)) {
+                    // insert both samples into the buffer
+                    readBuffer->samples [1] = {lastSample, 0};
+                    readBuffer->samples [2] = {newSample, (int16_t) (screenTimeOffset = newSampleTime - lastSampleTime)};
+                    readBuffer->count = 3;
+                    break;
+                }
+                lastSample = newSample;
+                lastSampleTime = newSampleTime;
+                // stop reading if sender is not running any more
+                if (!((oscilloscopeSharedMemoryType *) parameters)->senderIsRunning) {
+                    ((oscilloscopeSharedMemoryType *) parameters)->readerIsRunning = false;
+                    vTaskDelete (NULL); // instead of return; - stop this thread
+                }
+            } // while (true)
+        } // if (positiveTrigger || negativeTrigger)
+
+        // take (the rest of the) samples that fit into one screen
+        do {
+
+            unsigned int newSampleTime = microSeconds ? micros () : millis ();
+            int16_t sampleTimeOffset = newSampleTime - lastSampleTime;
+            screenTimeOffset += sampleTimeOffset;
+            lastSampleTime = newSampleTime;
+
+            // if we are past screen refresh time copy readBuffer into sendBuffer then empty readBuffer
+            if (screenTimeOffset >= screenRefreshTimeCommonUnit) {
+                // but only if modulus == 0 to reduce refresh frequency to sustainable 20 Hz
+                if (triggeredMode || !(screenRefreshCounter = (screenRefreshCounter + 1) % screenRefreshModulus)) {
+                    portENTER_CRITICAL (csSendBuffer);
+                    *sendBuffer = *readBuffer; // this also copies 'ready' flag which is 'true'
+                    portEXIT_CRITICAL (csSendBuffer);
+                }
+                // empty readBuffer
+                readBuffer->count = 0;
+            } // if (screenTimeOffset >= screenRefreshTimeCommonUnit)
+            // take the next sample
+            readBuffer->samples [readBuffer->count] = {(int16_t) (analog ? analogRead (gpio) : digitalRead (gpio)), sampleTimeOffset};
+            readBuffer->count = (readBuffer->count + 1) & 0b00111111; // 0 .. 63 max (which is inside buffer size) - just in case, the number of samples will never exceed 41
+            // stop reading if sender is not running any more
+            if (!((oscilloscopeSharedMemoryType *) parameters)->senderIsRunning) {
+                ((oscilloscopeSharedMemoryType *) parameters)->readerIsRunning = false;
+                vTaskDelete (NULL); // instead of return; - stop this thread
+            }
+
+            if (microSeconds) SPIFFSsafeDelayMicroseconds (samplingTime);
+            else              SPIFFSsafeDelay (samplingTime);
+
+        } while (screenTimeOffset < screenWidthTime);
+
+        // after the screen frame is processed we have to handle the preparations for the next screen frame differently for triggered and non triggered sampling
+        if (triggeredMode) {
+            // in triggered mode we have to wait for refresh time to pass before trying again
+            // one screen frame has already been sent, we have to wait yet screenRefreshModulus - 1 screen frames
+            // for the whole screen refresh time to pass
+            for (int i = 1; i < screenRefreshModulus; i++) {
+                if (microSeconds) SPIFFSsafeDelayMicroseconds (screenRefreshTimeCommonUnit);
+                else              SPIFFSsafeDelay (screenRefreshTimeCommonUnit);
+            }
+        } else {
+            // correct sampleTimeOffset for the first sample int the next screen frame in non triggered mode
+            sampleTimeOffset = screenTimeOffset - screenWidthTime;
         }
-        lastSample = newSample;
-        lastSampleTime = newSampleTime;
-        // stop reading if sender is not running any more
-        if (!((oscilloscopeSharedMemoryType *) parameters)->senderIsRunning) {
-          ((oscilloscopeSharedMemoryType *) parameters)->readerIsRunning = false;
-          vTaskDelete (NULL); // instead of return; - stop this thread
-        }
-      } // while (true)
-    } // if (positiveTrigger || negativeTrigger)
-
-    // take (the rest of the) samples that fit into one screen
-    do {
-
-      unsigned int newSampleTime = microSeconds ? micros () : millis ();
-      int16_t sampleTimeOffset = newSampleTime - lastSampleTime;
-      screenTimeOffset += sampleTimeOffset;
-      lastSampleTime = newSampleTime;
-
-      // if we are past screen refresh time copy readBuffer into sendBuffer then empty readBuffer
-      if (screenTimeOffset >= screenRefreshTimeCommonUnit) {
-        // but only if modulus == 0 to reduce refresh frequency to sustainable 20 Hz
-        if (triggeredMode || !(screenRefreshCounter = (screenRefreshCounter + 1) % screenRefreshModulus)) {
-          portENTER_CRITICAL (csSendBuffer);
-          *sendBuffer = *readBuffer; // this also copies 'ready' flag which is 'true'
-          portEXIT_CRITICAL (csSendBuffer);
-        }
-        // empty readBuffer
-        readBuffer->count = 0;
-      } // if (screenTimeOffset >= screenRefreshTimeCommonUnit)
-      // take the next sample
-      readBuffer->samples [readBuffer->count] = {(int16_t) (analog ? analogRead (gpio) : digitalRead (gpio)), sampleTimeOffset};
-      readBuffer->count = (readBuffer->count + 1) & 0b00111111; // 0 .. 63 max (which is inside buffer size) - just in case, the number of samples will never exceed 41
-      // stop reading if sender is not running any more
-      if (!((oscilloscopeSharedMemoryType *) parameters)->senderIsRunning) {
-        ((oscilloscopeSharedMemoryType *) parameters)->readerIsRunning = false;
-        vTaskDelete (NULL); // instead of return; - stop this thread
-      }
-
-      if (microSeconds) SPIFFSsafeDelayMicroseconds (samplingTime);
-      else              SPIFFSsafeDelay (samplingTime);
-
-    } while (screenTimeOffset < screenWidthTime);
-
-    // after the screen frame is processed we have to handle the preparations for the next screen frame differently for triggered and non triggered sampling
-    if (triggeredMode) {
-      // in triggered mode we have to wait for refresh time to pass before trying again
-      // one screen frame has already been sent, we have to wait yet screenRefreshModulus - 1 screen frames
-      // for the whole screen refresh time to pass
-      for (int i = 1; i < screenRefreshModulus; i++) {
-        if (microSeconds) SPIFFSsafeDelayMicroseconds (screenRefreshTimeCommonUnit);
-        else              SPIFFSsafeDelay (screenRefreshTimeCommonUnit);
-      }
-    } else {
-      // correct sampleTimeOffset for the first sample int the next screen frame in non triggered mode
-      sampleTimeOffset = screenTimeOffset - screenWidthTime;
-    }
-  } // while (true)
+    } // while (true)
 }
 
 void oscilloscopeSender (void *parameters) {
-  WebSocket *webSocket =            ((oscilloscopeSharedMemoryType *) parameters)->webSocket;
-  bool clientIsBigEndian =          ((oscilloscopeSharedMemoryType *) parameters)->clientIsBigEndian;
-  oscilloscopeSamples *sendBuffer = &((oscilloscopeSharedMemoryType *) parameters)->sendBuffer;
-  portMUX_TYPE *csSendBuffer =      &((oscilloscopeSharedMemoryType *) parameters)->csSendBuffer;
+    WebSocket *webSocket =            ((oscilloscopeSharedMemoryType *) parameters)->webSocket;
+    bool clientIsBigEndian =          ((oscilloscopeSharedMemoryType *) parameters)->clientIsBigEndian;
+    oscilloscopeSamples *sendBuffer = &((oscilloscopeSharedMemoryType *) parameters)->sendBuffer;
+    portMUX_TYPE *csSendBuffer =      &((oscilloscopeSharedMemoryType *) parameters)->csSendBuffer;
 
-  while (true) {
-    SPIFFSsafeDelay (1);
-    // send samples to javascript client if they are ready
-    if (sendBuffer->ready) {
-      oscilloscopeSamples samples;
-      portENTER_CRITICAL (csSendBuffer);
-      samples = *sendBuffer;
-      sendBuffer->ready = false;
-      portEXIT_CRITICAL (csSendBuffer);
-      // swap bytes if javascript calient is big endian
-      int size8_t = samples.count << 2;   // number of bytes = number of samles * 4
-      int size16_t = samples.count << 1;  // number of 16 bit words = number of samles * 2
-      if (clientIsBigEndian) {
-        uint16_t *a = (uint16_t *) &samples;
-        for (size_t i = 0; i < size16_t; i ++) a [i] = htons (a [i]);
-      }
-      if (!webSocket->sendBinary ((byte *) &samples,  size8_t)) {
+    while (true) {
+        SPIFFSsafeDelay (1);
+        // send samples to javascript client if they are ready
+        if (sendBuffer->ready) {
+            oscilloscopeSamples samples;
+            portENTER_CRITICAL (csSendBuffer);
+            samples = *sendBuffer;
+            sendBuffer->ready = false;
+            portEXIT_CRITICAL (csSendBuffer);
+            // swap bytes if javascript calient is big endian
+            int size8_t = samples.count << 2;   // number of bytes = number of samles * 4
+            int size16_t = samples.count << 1;  // number of 16 bit words = number of samles * 2
+            if (clientIsBigEndian) {
+                uint16_t *a = (uint16_t *) &samples;
+                for (size_t i = 0; i < size16_t; i ++) a [i] = htons (a [i]);
+            }
+            if (!webSocket->sendBinary ((byte *) &samples,  size8_t)) {
+                ((oscilloscopeSharedMemoryType *) parameters)->senderIsRunning = false; // notify oscilloscope functions that session is finished
+                vTaskDelete (NULL); // instead of return; - stop this task
+            }
+            // Serial.printf ("[oscilloscope] send %i samples, %i bytes to the client\n", samples.count, size8_t);
+        }
+        // read command form javscrip client if it arrives
+        if (webSocket->available () == WebSocket::STRING) { // according to oscilloscope protocol the string could only be 'stop' - so there is no need checking it
+        String s = webSocket->readString ();
+        Serial.printf ("[%10lu] [oscilloscope] %s\n", millis (), s.c_str ());
         ((oscilloscopeSharedMemoryType *) parameters)->senderIsRunning = false; // notify oscilloscope functions that session is finished
         vTaskDelete (NULL); // instead of return; - stop this task
-      }
-      // Serial.printf ("[oscilloscope] send %i samples, %i bytes to the client\n", samples.count, size8_t);
     }
-    // read command form javscrip client if it arrives
-    if (webSocket->available () == WebSocket::STRING) { // according to oscilloscope protocol the string could only be 'stop' - so there is no need checking it
-      String s = webSocket->readString ();
-      Serial.printf ("[%10lu] [oscilloscope] %s\n", millis (), s.c_str ());
-      ((oscilloscopeSharedMemoryType *) parameters)->senderIsRunning = false; // notify oscilloscope functions that session is finished
-      vTaskDelete (NULL); // instead of return; - stop this task
-    }
-  }
+}
 }
 
 void runOscilloscope (WebSocket *webSocket) {
@@ -470,64 +475,69 @@ void runOscilloscope (WebSocket *webSocket) {
 // setup (), loop () --------------------------------------------------------
 
 void setup () {
-  Serial.begin (115200);
+    Serial.begin (115200);
 
-  // connect ESP STAtion to WiFi
+    // connect ESP STAtion to WiFi
 
-  #define staSSID "YOUR-STA-SSID"
-  #define staPassword "YOUR-STA-PASSWORD"
+    // #define staSSID "YOUR-STA-SSID"
+    // #define staPassword "YOUR-STA-PASSWORD"
 
-  WiFi.disconnect (true);
-  WiFi.mode (WIFI_OFF);
-  WiFi.onEvent ([] (WiFiEvent_t event, WiFiEventInfo_t info) {
-    switch (event) {
-        case SYSTEM_EVENT_WIFI_READY:           Serial.printf ("[%10lu] [network] WiFi interface ready.\n", millis ());
-                                                break;
-        case SYSTEM_EVENT_STA_START:            Serial.printf ("[%10lu] [network] [STA] WiFi client started.\n", millis ());
-                                                break;
-        case SYSTEM_EVENT_STA_CONNECTED:        Serial.printf ("[%10lu] [network] [STA] connected to WiFi %s.\n", millis (), WiFi.SSID ().c_str());
-                                                break;
-        case SYSTEM_EVENT_STA_GOT_IP:           Serial.printf ("[%10lu] [network] [STA] obtained IP address %s.\n", millis (), WiFi.localIP ().toString ().c_str ());
-                                                break;
-        default:                                break;
-    }
-  });
-  Serial.printf ("[%10lu] [network] [STA] connecting STAtion to router using DHCP ...\n", millis ());
-  WiFi.begin (staSSID, staPassword);
-  WiFi.mode (WIFI_STA); // STA mode only
+    WiFi.disconnect (true);
+    WiFi.mode (WIFI_OFF);
+    WiFi.onEvent ([] (WiFiEvent_t event, WiFiEventInfo_t info) {
+        switch (event) {
+            case SYSTEM_EVENT_WIFI_READY:
+                Serial.printf ("[%10lu] [network] WiFi interface ready.\n", millis ());
+                break;
+            case SYSTEM_EVENT_STA_START:
+                Serial.printf ("[%10lu] [network] [STA] WiFi client started.\n", millis ());
+                break;
+            case SYSTEM_EVENT_STA_CONNECTED:
+                Serial.printf ("[%10lu] [network] [STA] connected to WiFi %s.\n", millis (), WiFi.SSID ().c_str());
+                break;
+            case SYSTEM_EVENT_STA_GOT_IP:
+                Serial.printf ("[%10lu] [network] [STA] obtained IP address %s.\n", millis (), WiFi.localIP ().toString ().c_str ());
+                break;
+            default:
+                break;
+        }
+    });
+    Serial.printf ("[%10lu] [network] [STA] connecting STAtion to router using DHCP ...\n", millis ());
+    WiFi.begin (staSSID, staPassword);
+    WiFi.mode (WIFI_STA); // STA mode only
 
-  // mount file system, WEB server will search tor files in /var/www/html directory
+    // mount file system, WEB server will search tor files in /var/www/html directory
 
-  mountSPIFFS (true);
+    mountSPIFFS (true);
 
-  // start FTP server so we can upload .html and .png files into /var/www/html directory
+    // start FTP server so we can upload .html and .png files into /var/www/html directory
 
-  ftpSrv = new ftpServer ("0.0.0.0", 21, NULL);
-  if (ftpSrv) { // did ESP create TcpServer instance?
-    if (ftpSrv->started ()) { // did FTP server start correctly?
-      Serial.printf ("[%10lu] FTP server has started.\n", millis ());
+    ftpSrv = new ftpServer ("0.0.0.0", 21, NULL);
+    if (ftpSrv) { // did ESP create TcpServer instance?
+        if (ftpSrv->started ()) { // did FTP server start correctly?
+            Serial.printf ("[%10lu] FTP server has started.\n", millis ());
+        } else {
+            Serial.printf ("[%10lu] FTP server did not start. Compile it in Verbose Debug level to find the error.\n", millis ());
+        }
     } else {
-      Serial.printf ("[%10lu] FTP server did not start. Compile it in Verbose Debug level to find the error.\n", millis ());
+        Serial.printf ("[%10lu] not enough free memory to start FTP server\n", millis ()); // shouldn't happen
     }
-  } else {
-    Serial.printf ("[%10lu] not enough free memory to start FTP server\n", millis ()); // shouldn't happen
-  }
 
-  // start WEB server
-  webSrv = new httpServer (httpRequestHandler, wsRequestHandler, 8192, (char *) "0.0.0.0", 80, NULL);
-  if (webSrv) { // did ESP create TcpServer instance?
-    if (webSrv->started ()) { // did WEB server start correctly?
-      Serial.printf ("[%10lu] WEB server has started.\n", millis ());
+    // start WEB server
+    webSrv = new httpServer (httpRequestHandler, wsRequestHandler, 8192, (char *) "0.0.0.0", 80, NULL);
+    if (webSrv) { // did ESP create TcpServer instance?
+        if (webSrv->started ()) { // did WEB server start correctly?
+            Serial.printf ("[%10lu] WEB server has started.\n", millis ());
+        } else {
+            Serial.printf ("[%10lu] WEB server did not start. Compile it in Verbose Debug level to find the error.\n", millis ());
+        }
     } else {
-      Serial.printf ("[%10lu] WEB server did not start. Compile it in Verbose Debug level to find the error.\n", millis ());
+        Serial.printf ("[%10lu] not enough free memory to start WEB server\n", millis ()); // shouldn't happen
     }
-  } else {
-    Serial.printf ("[%10lu] not enough free memory to start WEB server\n", millis ()); // shouldn't happen
-  }
 }
 
 void loop () {
-  SPIFFSsafeDelay (1);  // instead of delay ()
-                        // don't use delay () in multi-threaded environment together with SPIFSS - see:
-                        // https://github.com/BojanJurca/Esp32_web_ftp_telnet_server_template/issues/1
+    SPIFFSsafeDelay (1);  // instead of delay ()
+    // don't use delay () in multi-threaded environment together with SPIFSS - see:
+    // https://github.com/BojanJurca/Esp32_web_ftp_telnet_server_template/issues/1
 }
