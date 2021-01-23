@@ -1,21 +1,21 @@
 /*
- * 
- * file_system.h 
- * 
+ *
+ * file_system.h
+ *
  *  This file is part of Esp32_web_ftp_telnet_server_template project: https://github.com/BojanJurca/Esp32_web_ftp_telnet_server_template
  *
  *  A documentation on SPIFFS can be found here: http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html
- * 
+ *
  * History:
- *          - first release, 
+ *          - first release,
  *            November 15, 2018, Bojan Jurca
- *          - added SPIFFSsemaphore and SPIFFSsafeDelay () to assure safe muti-threading while using SPIFSS functions (see https://www.esp32.com/viewtopic.php?t=7876), 
+ *          - added SPIFFSsemaphore and SPIFFSsafeDelay () to assure safe muti-threading while using SPIFSS functions (see https://www.esp32.com/viewtopic.php?t=7876),
  *            April 13, 2019, Bojan Jurca
  *          - added functions __readEntireFileWithoutSemaphore__ and __writeEntireFileWithoutSemaphore__
  *            September 8, Bojan Jurca
  *          - elimination of compiler warnings and some bugs
  *            Jun 10, 2020, Bojan Jurca
- *  
+ *
  */
 
 
@@ -23,17 +23,17 @@
   #define __FILE_SYSTEM__
 
   // ----- includes, definitions and supporting functions -----
-  
+
   #include <WiFi.h>
-  #include <SPIFFS.h>  
-  #include "TcpServer.hpp" // we'll need SPIFFSsemaphore defined in TcpServer.hpp 
+  #include <SPIFFS.h>
+  #include "TcpServer.hpp" // we'll need SPIFFSsemaphore defined in TcpServer.hpp
 
 
-  void __fileSystemDmesg__ (String message) { 
+  void __fileSystemDmesg__ (String message) {
     #ifdef __TELNET_SERVER__ // use dmesg from telnet server if possible
       dmesg (message);
     #else
-      Serial.printf ("[%10lu] %s\n", millis (), message.c_str ()); 
+      Serial.printf ("[%10lu] %s\n", millis (), message.c_str ());
     #endif
   }
   void (* fileSystemDmesg) (String) = __fileSystemDmesg__; // use this pointer to display / record system messages
@@ -43,7 +43,7 @@
 
   bool mountSPIFFS (bool formatIfUnformatted) {                                           // mount file system by calling this function
     bool b;
-    
+
       fileSystemDmesg ("[file system] mounting SPIFFS ...");
     xSemaphoreTake (SPIFFSsemaphore, portMAX_DELAY);
       b = SPIFFS.begin (formatIfUnformatted);
@@ -60,18 +60,18 @@
   // reads entire file into String without using sempahore - it is expected that calling functions would provide it - returns success
   bool __readEntireFileWithoutSemaphore__ (String *fileContent, const char *fileName) {
     *fileContent = "";
-    
+
     File file;
     if ((bool) (file = SPIFFS.open (fileName, "r")) && !file.isDirectory ()) {
       while (file.available ()) *fileContent += String ((char) file.read ());
       file.close ();
       return true;
-    } else { 
+    } else {
       Serial.printf ("[%10lu] [file_system] can't read %s\n", millis (), fileName);
       file.close ();
-      return false;      
+      return false;
     }
-  }  
+  }
 
   // writes String into file file without using sempahore - it is expected that calling functions would provide it - returns success
   bool __writeEntireFileWithoutSemaphore__ (String fileContent, const char *fileName) {
@@ -80,21 +80,21 @@
       if (file.printf (fileContent.c_str ()) != strlen (fileContent.c_str ())) { // can't write file
         file.close ();
         Serial.printf ("[%10lu] [file_system] can't write %s\n", millis (), fileName);
-        return false;                
+        return false;
       } else {
         file.close ();
-        return true;        
+        return true;
       }
     }
     return false; // never executes
-  }  
+  }
 
   // reads entire file into String, returns success
   bool readEntireFile (String *fileContent, const char *fileName) {
     xSemaphoreTake (SPIFFSsemaphore, portMAX_DELAY);
       bool b = __readEntireFileWithoutSemaphore__ (fileContent, fileName);
     xSemaphoreGive (SPIFFSsemaphore);
-    return b;      
+    return b;
   }
 
   // writes String into file file, returns success
@@ -102,24 +102,24 @@
     xSemaphoreTake (SPIFFSsemaphore, portMAX_DELAY);
       bool b = __writeEntireFileWithoutSemaphore__ (fileContent, fileName);
     xSemaphoreGive (SPIFFSsemaphore);
-    return b;  
-  }  
-  
+    return b;
+  }
+
   String readEntireTextFile (const char *fileName) { // reads entire file into String (ignoring \r) - it is supposed to be used for small files
     String s = "";
     char c;
     File file;
-    
+
     xSemaphoreTake (SPIFFSsemaphore, portMAX_DELAY);
       if ((bool) (file = SPIFFS.open (fileName, FILE_READ)) && !file.isDirectory ()) {
         while (file.available ()) if ((c = file.read ()) != '\r') s += String (c);
-        file.close (); 
+        file.close ();
       } else {
         Serial.printf ("[%10lu] [file system] can't read %s\n", millis (), fileName);
       }
     xSemaphoreGive (SPIFFSsemaphore);
-    
-    return s;  
+
+    return s;
   }
 
   // reads entire file into buffer allocted by malloc, returns success pointer to buffer - it has to be
@@ -136,17 +136,17 @@
           int i = 0;
           while (file.available () && i++ < *buffSize) *(p++) = file.read ();
           *buffSize = i;
-        } else fileSystemDmesg ("[file system] malloc failed in function " + String (__func__) + "."); 
+        } else fileSystemDmesg ("[file system] malloc failed in function " + String (__func__) + ".");
         file.close ();
-      } else fileSystemDmesg ("[file system] can't open " + String (fileName) + "."); 
-      
+      } else fileSystemDmesg ("[file system] can't open " + String (fileName) + ".");
+
     xSemaphoreGive (SPIFFSsemaphore);
-    return retVal;      
+    return retVal;
   }
 
   void listFilesOnFlashDrive () {
     Serial.printf ("\r\nFiles present on built-in flash disk:\n\n");
-  
+
     xSemaphoreTake (SPIFFSsemaphore, portMAX_DELAY);
       File dir = SPIFFS.open ("/");
       if (!dir) {
@@ -163,8 +163,8 @@
         }
       }
     xSemaphoreGive (SPIFFSsemaphore);
-  
-    Serial.printf ("\n");    
+
+    Serial.printf ("\n");
   }
 
 #endif

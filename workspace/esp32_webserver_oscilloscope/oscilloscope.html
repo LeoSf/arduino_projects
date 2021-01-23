@@ -27,13 +27,13 @@
 			/* radio button control */
 			.container {display: black; position: relative; padding-left: 222px; margin-bottom: 14px; cursor: pointer; font-family: verdana; font-size: 30px; color: gray; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none}
 			.container input {position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0}
-			.checkmark {position: absolute; top: 0; left: 0; height: 34px; width: 34px; background-color: #ddd; border-radius: 50%} 
+			.checkmark {position: absolute; top: 0; left: 0; height: 34px; width: 34px; background-color: #ddd; border-radius: 50%}
 			.container:hover input ~ .checkmark {background-color: #ccc}
 			.container input:checked ~ .checkmark {background-color: #2196F3}
 			.checkmark:after {content: ""; position: absolute; display: none}
 			.container input:checked ~ .checkmark:after {display: block}
 			.container .checkmark:after {top: 9px; left: 9px; width: 15px; height: 15px; border-radius: 50%; background: white}
-			.container input:disabled ~ .checkmark {background-color: gray} 
+			.container input:disabled ~ .checkmark {background-color: gray}
 			.container input:disabled ~ .checkmark {background-color: #aaa}
 
 			/* slider control */
@@ -90,7 +90,7 @@
 		<hr />
 		<div class='d1' style='height: 50px;'>
 			<div class='d2'>&nbsp;Select ESP32 GPIO to monitor</div>
-			<div class='d3'> 
+			<div class='d3'>
 				<select id='gpio'>
 				        <option value='1'>GPIO  1</option><option value='2'>GPIO  2</option><option value='3'>GPIO  3</option><option value='4'>GPIO  4</option><option value='5'>GPIO  5</option>
 					<option value='12'>GPIO 12</option><option value='13'>GPIO 13</option><option value='14'>GPIO 14</option><option value='15'>GPIO 15</option><option value='16'>GPIO 16</option>
@@ -139,7 +139,7 @@
 		<div class='d1'>
 			<div class='d2'>&nbsp;Vertical sensitivity</div>
 			<div class='d3' id='sensitivityLabel'>100 %</div>
-			<div class='d4'> 
+			<div class='d4'>
 				<div class='slider'><input id='sensitivity' type='range' min='0' max='5' value='0' step='1' onchange="
 					switch (this.value) {
 						case '0':	document.getElementById ('sensitivityLabel').textContent = '100 %'; break;
@@ -157,7 +157,7 @@
 		<div class='d1'>
 			<div class='d2'>&nbsp;Vertical position</div>
 			<div class='d3' id='positionLabel'>0</div>
-			<div class='d4'> 
+			<div class='d4'>
 				<div class='slider'><input id='position' type='range' min='0' max='4000' value='0' step='100' onchange="
 					document.getElementById ('positionLabel').textContent = this.value;
 					drawBackgroundAndCalculateParameters ();
@@ -172,7 +172,7 @@
 				<label class='switch'><input type='checkbox' id='posTrigger'><div class='slider round'></div></label>
 			</div>
 			<div class='d3' id='posTriggerLabel'>on 1000</div>
-			<div class='d5'> 
+			<div class='d5'>
 				<div class='slider'><input id='posTreshold' type='range' min='1' max='4095' value='1000' step='1' onchange="
 					document.getElementById ('posTriggerLabel').textContent = 'on ' + this.value;
 					document.getElementById ('posTrigger').checked = true;
@@ -185,7 +185,7 @@
 				<label class='switch'><input type='checkbox' id='negTrigger'><div class='slider round'></div></label>
 			</div>
 			<div class='d3' id='negTriggerLabel'>on 3000</div>
-			<div class='d5'> 
+			<div class='d5'>
 				<div class='slider'><input id='negTreshold' type='range' min='0' max='4094' value='3000' step='1' onchange="
 					document.getElementById('negTriggerLabel').textContent = 'on ' + this.value;
 					document.getElementById('negTrigger').checked = true;
@@ -198,7 +198,7 @@
 		<div class='d1'>
 			<div class='d2'>&nbsp;Horizontal frequency</div>
 			<div class='d3' id='frequencyLabel'>1 KHz</div>
-			<div class='d4'> 
+			<div class='d4'>
 				<div class='slider'><input id='frequency' type='range' min='1' max='17' value='14' step='1' onchange="
 					switch (this.value) {
 						case '1':	document.getElementById ('frequencyLabel').textContent = '0,1 Hz'; break;
@@ -269,17 +269,17 @@
 
 			function stopOscilloscope () {
 				if (webSocket != null) {
-					webSocket.send ('stop'); 
-					webSocket.close (); 
+					webSocket.send ('stop');
+					webSocket.close ();
 					webSocket = null;
 				}
 			}
-		
+
 			function startOscilloscope () {
 				stopOscilloscope ();
 
 	            		if ("WebSocket" in window) {
-					// open a web socket 
+					// open a web socket
 					var ws = new WebSocket ("ws://" + self.location.host + "/runOscilloscope");
 					webSocket = ws;
 
@@ -299,7 +299,7 @@
 									break;
 							case '2':	// horizontal frequency = 0,2 Hz, whole width = 5 s, 40 samples per screen, 125 ms per sample (fits in 16 bit integer), refresh every sample (8 Hz)
 									startCommand += "125 ms refresh screen of width 5000 ms every 125 ms";  // 8 Hz, 0,2 Hz, max 40 samples per screen
-									break; 
+									break;
 							case '3':	// horizontal frequency = 0,5 Hz, whole width = 2 s, 40 samples per screen, 50 ms per sample (fits in 16 bit integer), refresh every sample (20 Hz)
 									startCommand += "50 ms refresh screen of width 2000 ms every 50 ms"; // 20 Hz, 0,5 Hz, max 40 samples per screen
 									break;
@@ -332,7 +332,7 @@
 									break;
 							case '10':	// horizontal frequency = 60 Hz, whole width = 0,016667 s, 40 samples per screen, 417 us per sample (fits in 16 bit integer), refresh every 3rd screen frame (19.60 Hz)
 									startCommand += "425 us refresh screen of width 17000 us every 51 ms"; // 2,4 kHz, 60 Hz, max 40 samples per screen
-									break; 
+									break;
 							case '11':	// horizontal frequency = 100 Hz, whole width = 0,01 s, 40 samples per screen, 250 us per sample (fits in 16 bit integer), refresh every 5th screen frame (20 Hz)
 									startCommand += "250 us refresh screen of width 10000 us every 50 ms"; // 4 kHz, 50 Hz, max 40 samples per screen
 									break;
@@ -371,7 +371,7 @@
 						ws.send (startCommand);
 					};
 
-					ws.onmessage = function (evt) { 
+					ws.onmessage = function (evt) {
 						if (typeof (evt.data) === 'string' || evt.data instanceof String) { // UTF-8 formatted string - error message from ESP32 server
 							alert ("Error: " + evt.data);
 							enableDisableControls (false);
@@ -391,15 +391,15 @@
 						}
 					};
 
-               				ws.onclose = function () { 
+               				ws.onclose = function () {
 						// websocket is closed.
-						enableDisableControls (false); 
+						enableDisableControls (false);
 					};
 
 					ws.onerror = function (event) {
-						ws.close (); 
+						ws.close ();
 						alert ("WebSocket error: " + event);
-						enableDisableControls (false); 
+						enableDisableControls (false);
 					};
 
 				} else {
@@ -413,7 +413,7 @@
 			var restartDrawingSignal;	// used for drawing the signal
 			var screenTimeOffset;		// used for drawing the signal
 
-			var xOffset;			
+			var xOffset;
 			var xScale;
 			var yOffset;
 			var yScale;
@@ -425,7 +425,7 @@
 				var y;		// y coordinate
 				var i;		// x coordinate in canvas units
 				var j;		// y coordinate in canas units
-				var yGridTick;	
+				var yGridTick;
 				var gridTop; 	// y value at the top of the grid
 
 				restartDrawingSignal = true; 	// drawing parameter - for later use
@@ -435,7 +435,7 @@
 				var ctx = canvas.getContext ('2d');
 
 				// colour background
-				ctx.fillStyle = '#031c30'; 
+				ctx.fillStyle = '#031c30';
 				ctx.beginPath ();
 				ctx.moveTo (0, 0);
 				ctx.lineTo (canvas.width - 1, 0);
@@ -454,21 +454,21 @@
 				// draw analog signal grid
 
 				if (document.getElementById ('analog').checked) {
-					
+
 					// signal sensitivity
 
-					yScale = -(canvas.height - 60) / 4096; 
+					yScale = -(canvas.height - 60) / 4096;
 					yGridTick = 1000;
-	
+
 					switch (document.getElementById ('sensitivity').value) {
-						case '0':	yScale *= 1; break; 
+						case '0':	yScale *= 1; break;
 						case '1':	yScale *= 2; break;
 						case '2':	yScale *= 4; yGridTick = 200; break;
 						case '3':	yScale *= 8; yGridTick = 200; break;
 						case '4':	yScale *= 10; yGridTick = 100; break;
 						case '5':	yScale *= 20; yGridTick = 100; break;
 					}
-					
+
 					yOffset = canvas.height - 50 - parseInt (document.getElementById ('position').value) * yScale;
 					gridTop = yOffset + yScale * 4095 + 5;
 
@@ -476,17 +476,17 @@
 
 					for (y = 0; y < 4096; y += yGridTick) {
 						j = yOffset + yScale * y;
-						ctx.strokeText (y.toString (), 5, j + 5);	
+						ctx.strokeText (y.toString (), 5, j + 5);
 						ctx.beginPath ();
 						ctx.moveTo (xOffset - 5, j);
 						ctx.lineTo (canvas.width, j);
 						ctx.closePath ();
 						ctx.stroke ();
-					}					
+					}
 
 				// draw digital signal grid
 
-				} else { 
+				} else {
 					yOffset = canvas.height - 100;
 					yScale = -(canvas.height - 200);
 					for (y = 0; y <= 1; y += 0.333333) {
@@ -498,52 +498,52 @@
 						ctx.stroke ();
 					}
 					ctx.strokeText ('0', 5, yOffset + 5);
-					ctx.strokeText ('1', 5, yOffset + yScale * 1 + 5);	
+					ctx.strokeText ('1', 5, yOffset + yScale * 1 + 5);
 					gridTop = yOffset + yScale * 1 - 25;
 				}
-				
+
 				// draw vertical grid and scale
 
 				switch (document.getElementById ('frequency').value) {
 
-					case '1':	screenWidthTime = 10000; // (ms) horizontal frequency = 0,1 Hz, whole width = 10 s, grid tick width = 1 s 
+					case '1':	screenWidthTime = 10000; // (ms) horizontal frequency = 0,1 Hz, whole width = 10 s, grid tick width = 1 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 							
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '1 s';
 							break;
 					case '2':	screenWidthTime = 5000; // (ms) horizontal frequency = 0,2 Hz, whole width = 5 s, grid tick width = 0,5 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 							
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '500 ms';
-							break; 
+							break;
 					case '3':	screenWidthTime = 2000; // (ms) horizontal frequency = 0,5 Hz, whole width = 2 s, grid tick width = 0,2 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '200 ms';
 							break;
 					case '4':	screenWidthTime = 1000; // (ms) horizontal frequency = 1 Hz, whole width = 1 s, grid tick width = 0,1 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '100 ms';
 							break;
 					case '5':	screenWidthTime = 500000; // (us) horizontal frequency = 2 Hz, whole width = 0,5 s, grid tick width = 0,05 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime;  
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '50 ms';
 							break;
 					case '6':	screenWidthTime = 200000; // (us) horizontal frequency = 5 Hz, whole width = 0,2 s, grid tick width = 0,02 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime;  
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '20 ms';
 							break;
 					case '7':	screenWidthTime = 100000; // (us) horizontal frequency = 10 Hz, whole width = 0,1 s, grid tick width = 0,01 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '10 ms';
 							break;
 					case '8':	screenWidthTime = 50000; // (us) horizontal frequency = 20 Hz, whole width = 0,05 s, grid tick width = 0,005 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '5 ms';
 							break;
 					case '9':	screenWidthTime = 20000; // horizontal frequency = 50 Hz, whole width = 0,02 s, grid tick width = 0,002 s
@@ -563,39 +563,39 @@
 							break;
 					case '12':	screenWidthTime = 5000; // horizontal frequency = 200 Hz, whole width = 0,005 s, grid tick width = 0,0005 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '500 us';
 							break;
 					case '13':	screenWidthTime = 2000; // horizontal frequency = 500 Hz, whole width = 0,002 s, grid tick width = 0,0002 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '200 us';
 							break;
 					case '14':	screenWidthTime = 1000; // horizontal frequency = 1000 Hz, whole width = 0,001 s, grid tick width = 0,0001 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '100 us';
 							break;
 					case '15':	screenWidthTime = 500; // horizontal frequency = 2000 Hz, whole width = 0,00005 s, grid tick width = 0,00005 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime;  
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '50 us';
 							break;
 					case '16':	screenWidthTime = 200; // horizontal frequency = 5000 Hz, whole width = 0,00002 s, grid tick width = 0,00002 s
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '20 us';
 							break;
 					case '17':	screenWidthTime = 100; // horizontal frequency = 10000 Hz, whole width = 0,0001 s (100 us), grid tick width = 0,0001 s (10 us)
 							xGridTick = screenWidthTime / 10;
-							xScale = (canvas.width - xOffset) / screenWidthTime; 
+							xScale = (canvas.width - xOffset) / screenWidthTime;
 							xLabel = '10 us';
 							break;
 				}
 
-				for (x = 0; x < screenWidthTime; x += xGridTick) { 
+				for (x = 0; x < screenWidthTime; x += xGridTick) {
 					i = xOffset + xScale * x;
-					ctx.strokeText (xLabel, i + 25, yOffset + 25);	
+					ctx.strokeText (xLabel, i + 25, yOffset + 25);
 					ctx.beginPath ();
 					ctx.moveTo (i, yOffset + 5);
 					ctx.lineTo (i, gridTop);
@@ -625,12 +625,12 @@
 				var canvas = document.getElementById ("oscilloscope")
 				var ctx = canvas.getContext ('2d');
 
-				var analog = document.getElementById ('analog').checked; 
+				var analog = document.getElementById ('analog').checked;
 				var lines = document.getElementById ("lines").checked;
 				var markers = document.getElementById ("markers").checked;
 
 				var tmp = screenTimeOffset;
-				
+
 				ctx.strokeStyle='#b6dcfb';
 				ctx.lineWidth=5;
 
@@ -644,16 +644,16 @@
 							i = xOffset + xScale * screenTimeOffset;
  							j = yOffset + yScale * myInt16Array [ind]; // signal value
 							if (restartDrawingSignal) {
-								ctx.moveTo (i, j); 
+								ctx.moveTo (i, j);
 								restartDrawingSignal = false;
 							} else {
-							    ctx.lineTo (i, j); 
+							    ctx.lineTo (i, j);
 							    ctx.stroke ();
 							}
 						}
 
 					} else { // digital
-						
+
 						for (var ind = startInd; ind <= endInd; ind += 2) {
 							screenTimeOffset += myInt16Array [ind + 1]; // signal time offset
 							i = xOffset + xScale * screenTimeOffset;
@@ -662,16 +662,16 @@
 								j = yOffset + yScale * yLast;
 								ctx.moveTo (i, j);
 								restartDrawingSignal = false;
-							} 
+							}
 							ctx.lineTo (i, j);
 							yLast = myInt16Array [ind];
 							j = yOffset + yScale * yLast; // signal value
 							ctx.lineTo (i, j);
 						}
 						ctx.stroke ();
-						
+
 					}
-				}	
+				}
 
 				// draw markers
 
@@ -682,7 +682,7 @@
 						ctx.beginPath ();
 						i = xOffset + screenTimeOffset * xScale;
 						j = yOffset + myInt16Array [ind] * yScale; // signal value
-						ctx.arc (i, j, 5, 0, 2 * Math.PI, false); 
+						ctx.arc (i, j, 5, 0, 2 * Math.PI, false);
 						ctx.stroke ();
 						ctx.closePath ();
 					}
@@ -735,15 +735,15 @@
 						document.getElementById ('negTriggerLabel').style.color = 'black';
 					}
 
-				} 
+				}
 			}
 
 
 			// some tests during development
 
-			function test_analog_1_sample_at_a_time () { 
+			function test_analog_1_sample_at_a_time () {
 				document.getElementById ('frequency').value = 3; // 0,5 Hz
-				document.getElementById ('analog').checked = true; 
+				document.getElementById ('analog').checked = true;
 				var count = 0;
 				var timer = setInterval (function () {
 					if (count % 40 == 0) { // start drawing signal from the left of the screen
@@ -756,9 +756,9 @@
 				}, 50); // ms
 			}
 
-			function test_analog_1_screen_at_a_time () { 
+			function test_analog_1_screen_at_a_time () {
 				document.getElementById ('frequency').value = 8; // 20 Hz
-				document.getElementById ('analog').checked = true; 
+				document.getElementById ('analog').checked = true;
 				var count = 0;
 				var timer = setInterval (function () {
 					var myInt16Array = new Int16Array (82);
@@ -772,9 +772,9 @@
 				}, 50); // ms
 			}
 
-			function test_digital_1_sample_at_a_time () { 
+			function test_digital_1_sample_at_a_time () {
 				document.getElementById ('frequency').value = 3; // 0,5 Hz
-				document.getElementById ('analog').checked = false; 
+				document.getElementById ('analog').checked = false;
 				var count = 0;
 				var timer = setInterval (function () {
 					if (count % 40 == 0) { // start drawing signal from the left of the screen
@@ -787,9 +787,9 @@
 				}, 50); // ms
 			}
 
-			function test_digital_1_screen_at_a_time () { 
+			function test_digital_1_screen_at_a_time () {
 				document.getElementById ('frequency').value = 8; // 20 Hz
-				document.getElementById ('analog').checked = false; 
+				document.getElementById ('analog').checked = false;
 				var count = 0;
 				var timer = setInterval (function () {
 					var myInt16Array = new Int16Array (82);
@@ -807,7 +807,7 @@
 				var start = performance.now ();
 				while ((performance.now () - start) < milliseconds);
 			}
-			
+
 			// enableDisableControls (true);
 			// test_analog_1_sample_at_a_time ();
 			// test_analog_1_screen_at_a_time ();
