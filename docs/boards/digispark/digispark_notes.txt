@@ -1,0 +1,20 @@
+Digispark Basics  
+http://digistump.com/wiki/digispark/tutorials/basics
+
+
+## Official docs
+
+
+DigistumpArduino  
+https://github.com/digistump/DigistumpArduino  
+
+Connecting and Programming Your Digispark  
+http://digistump.com/wiki/digispark/tutorials/connecting  
+
+
+
+## Other sources:  
+
+
+https://www.luisllamas.es/programar-digispark-con-el-ide-de-arduino/  
+https://www.digilogic.es/digispark-attiny-usb-un-arduino-en-miniatura/  
